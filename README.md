@@ -21,7 +21,7 @@
 ## Usage
 
 ```powershell
-.	ail-log.ps1 -LogPath "C:\Logs\app.log"
+.tail-log.ps1 -LogPath "C:\Logs\app.log"
 ```
 
 The script will:
