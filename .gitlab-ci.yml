@@ -1,0 +1,27 @@
+stages:
+  - test
+
+variables:
+  SCRIPT_NAME: "tail-log.ps1"
+  # LOG_FILE: "test-log.log"
+  
+test_script:
+  stage: test
+  image: mcr.microsoft.com/powershell
+  script:
+    - pwsh -File addon/syntax-check.ps1 -ScriptPath $SCRIPT_NAME
+
+# test:windows:
+#   stage: test
+#   tags:
+#     - windows  # wymaga runnera Windows
+#   script:
+#     - echo "Start test log" > %LOG_FILE%
+#     - powershell.exe -ExecutionPolicy Bypass -NoProfile -File %PS_SCRIPT% -LogPath %LOG_FILE% &
+#     - timeout /t 2
+#     - echo "Linia 1 testowa" >> %LOG_FILE%
+#     - timeout /t 2
+#     - echo "Linia 2 testowa" >> %LOG_FILE%
+#     - timeout /t 2
+#     - taskkill /f /im powershell.exe
+#     - echo "Test zakonczony"
