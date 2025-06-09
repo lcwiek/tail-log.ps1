@@ -27,35 +27,34 @@ if (-not (Test-Path $LogPath)) {
     exit 1
 }
 
-$dir = Split-Path $LogPath
-$file = Split-Path $LogPath -Leaf
-
 Write-Host "Monitoring file: $LogPath`n"
 
-$previousLength = 0
+$lastSize = 0
 
 while ($true) {
     if (Test-Path $LogPath) {
-        # Read the entire file content as a single string
-        $currentContent = Get-Content $LogPath -Raw
-        $currentLength = $currentContent.Length
+        $file = [System.IO.File]::Open($LogPath, 'Open', 'Read', [System.IO.FileShare]::ReadWrite)
+        $reader = New-Object System.IO.StreamReader($file)
 
-        if ($currentLength -lt $previousLength) {
-            # The file was overwritten or rotated
+        if ($lastSize -gt $file.Length) {
             Write-Host "`n--- File was rotated ---`n"
-            Write-Output $currentContent
-        }
-        elseif ($currentLength -gt $previousLength) {
-            # Display only new content added since last check
-            $newData = $currentContent.Substring($previousLength)
-            Write-Output $newData
+            $file.Seek(0, 'Begin') | Out-Null
+        } else {
+            $file.Seek($lastSize, 'Begin') | Out-Null
         }
 
-        $previousLength = $currentLength
+        while (-not $reader.EndOfStream) {
+            $line = $reader.ReadLine()
+            Write-Output $line
+        }
+
+        $lastSize = $file.Position
+
+        $reader.Close()
+        $file.Close()
     } else {
-        # File not found (possibly deleted or rotated)
-        Write-Host "`nFile disappeared. Waiting for it to reappear..."
-        $previousLength = 0
+        Write-Host "`nFile not found. Waiting..."
+        $lastSize = 0
     }
 
     Start-Sleep -Milliseconds 200
